@@ -34,6 +34,7 @@ jobs:
           script:
             - echo "Downloading PR $TRAVIS_PULL_REQUEST script!"
             - curl https://api.github.com/repos/ppc64le/build-scripts/$BUILD_SCRIPTS_PR_NUM/files > /tmp/out.json
+            - cat /tmp/out.json
             - wget $(jq .[0].raw_url /tmp/out.json | tr -d \")
             - ls $PWD
             - docker run -dt --name test --rm -v $PWD:/home/tester registry.access.redhat.com/ubi8/ubi:8.5 bash -c "/home/tester/script.sh"

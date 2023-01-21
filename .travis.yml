@@ -15,6 +15,7 @@ before_script:
   - curl -H "Accept: application/json" -H "Authorization: token $GH_TOKEN" \
       https://api.github.com/repos/anup-kodlekere/travis-bs/pulls/$TRAVIS_PULL_REQUEST/files > /tmp/out.json
   - BUILD_SCRIPTS_PR_NUM=$(jq .[0].filename /tmp/out.json | tr -d \")
+  - echo $BUILD_SCRIPTS_PR_NUM
 
 matrix:
     include:
@@ -27,7 +28,8 @@ matrix:
             - pip3 install docker
             - python3 build-scripts/script/validate_builds.py $BUILD_SCRIPTS_PR_NUM &
             - SCRIPT_PID=$!;while ps -p $SCRIPT_PID > /dev/null;do echo "$SCRIPT_PID is running"; sleep 60; done; wait $SCRIPT_PID; my_pid_status=$?; travis_terminate $my_pid_status
-            
+  
+  
         - name: My repo
           env: personal-test  
           script:

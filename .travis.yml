@@ -12,8 +12,7 @@ before_install:
 
 before_script:
     - sudo apt-get install jq wget -y
-    - curl -H "Accept: application/json" -H "Authorization: token $GH_TOKEN" \
-      https://api.github.com/repos/anup-kodlekere/travis-bs/pulls/$TRAVIS_PULL_REQUEST/files > /tmp/out.json
+    - curl -H "Accept: application/json" -H "Authorization: token $GH_TOKEN" https://api.github.com/repos/anup-kodlekere/travis-bs-validator/pulls/$TRAVIS_PULL_REQUEST/files > /tmp/out.json
     - BUILD_SCRIPTS_PR_NUM=$(jq .[0].filename /tmp/out.json | tr -d \")
     - echo $BUILD_SCRIPTS_PR_NUM
 

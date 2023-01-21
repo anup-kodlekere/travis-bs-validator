@@ -12,7 +12,7 @@ before_install:
 
 before_script:
     - sudo apt-get install jq wget -y
-    - curl -H "Accept: application/json" -H "Authorization: token $GH_TOKEN" \
+    - curl -H "Authorization: token $GH_TOKEN" \
             https://api.github.com/repos/anup-kodlekere/travis-bs-validator/pulls/$TRAVIS_PULL_REQUEST/files > /tmp/out.json
     - BUILD_SCRIPTS_PR_NUM=$(jq .[0].filename /tmp/out.json | tr -d \")
     - echo $BUILD_SCRIPTS_PR_NUM
@@ -28,3 +28,14 @@ jobs:
             - pip3 install docker
             - python3 build-scripts/script/validate_builds.py $BUILD_SCRIPTS_PR_NUM &
             - SCRIPT_PID=$!; while ps -p $SCRIPT_PID > /dev/null; do echo "$SCRIPT_PID is running"; sleep 60; done; wait $SCRIPT_PID; my_pid_status=$?; travis_terminate $my_pid_status
+            
+            
+        - name: My repo
+          env: personal-test  
+          script:
+            - echo "Downloading PR $TRAVIS_PULL_REQUEST script!"
+            - curl -H "Accept: application/json" -H "Authorization: token $GH_TOKEN" https://api.github.com/repos/ppc64le/build-scripts/$BUILD_SCRIPTS_PR_NUM/files > /tmp/out.json
+            - wget $(jq .[0].raw_url /tmp/out.json | tr -d \")
+            - ls $PWD
+            - docker run -dt --name test --rm -v $PWD:/home/tester registry.access.redhat.com/ubi8/ubi:8.5 bash -c "/home/tester/script.sh"
+            - docker logs -f test

@@ -3,6 +3,8 @@ if: type = pull_request
 dist: focal
 os: linux
 language: shell
+env:
+    - BSPRN=0
 
 services:
     - docker
@@ -15,24 +17,27 @@ before_script:
     - curl https://api.github.com/repos/anup-kodlekere/travis-bs-validator/pulls/$TRAVIS_PULL_REQUEST/files > /tmp/out.json
     - BUILD_SCRIPTS_PR_NUM=$(jq .[0].filename /tmp/out.json | tr -d \")
     - echo $BUILD_SCRIPTS_PR_NUM
+    - BSPRN=$BUILD_SCRIPTS_PR_NUM
 
 jobs:
     include:
-        - name: Build-Script
-          env: build-script-repo
-          script:
-            - git clone https://github.com/ppc64le/build-scripts/
-            - sudo apt update -y && sudo apt-get install file -y
-            - pip3 install requests
-            - pip3 install docker
-            - python3 build-scripts/script/validate_builds.py $BUILD_SCRIPTS_PR_NUM &
-            - SCRIPT_PID=$!; while ps -p $SCRIPT_PID > /dev/null; do echo "$SCRIPT_PID is running"; sleep 60; done; wait $SCRIPT_PID; my_pid_status=$?; travis_terminate $my_pid_status
+#         - name: Build-Script
+#           env: build-script-repo
+#           script:
+#             - git clone https://github.com/ppc64le/build-scripts/
+#             - sudo apt update -y && sudo apt-get install file -y
+#             - pip3 install requests
+#             - pip3 install docker
+#             - python3 build-scripts/script/validate_builds.py $BUILD_SCRIPTS_PR_NUM &
+#             - SCRIPT_PID=$!; while ps -p $SCRIPT_PID > /dev/null; do echo "$SCRIPT_PID is running"; sleep 60; done; wait $SCRIPT_PID; my_pid_status=$?; travis_terminate $my_pid_status
             
             
         - name: My repo
           env: personal-test  
           script:
             - echo "Downloading PR $TRAVIS_PULL_REQUEST script!"
+            - echo $BUILD_SCRIPTS_PR_NUM
+            - echo $BSPRN
             - curl https://api.github.com/repos/ppc64le/build-scripts/$BUILD_SCRIPTS_PR_NUM/files > /tmp/out.json
             - cat /tmp/out.json
             - wget $(jq .[0].raw_url /tmp/out.json | tr -d \")
